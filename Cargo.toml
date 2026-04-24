@@ -2,8 +2,12 @@
 name = "libskills"
 version = "0.1.0"
 edition = "2021"
-description = "CLI for the LibSkills ecosystem"
+description = "CLI for the LibSkills ecosystem — Behavioral Knowledge Layer for Open-Source Libraries"
 license = "Apache-2.0"
 repository = "https://github.com/LibSkills/libskills-cli"
+
+[[bin]]
+name = "libskills"
+path = "src/main.rs"
 
 [dependencies]
