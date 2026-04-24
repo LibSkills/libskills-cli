@@ -1,19 +1,27 @@
 # libskills-cli
 
-**Rust CLI for the LibSkills ecosystem.**
+**Rust CLI for discovering and managing library skills.**
 
-```bash
-libskills search cpp logging      # Fuzzy search registry
-libskills get cpp/gabime/spdlog    # Download a skill
-libskills info spdlog              # Show skill metadata
-libskills update                   # Refresh registry index
-libskills list                     # List cached skills
-libskills cache                    # Manage local cache
-libskills init                     # Generate skill template
-libskills doctor spdlog            # Validate local skill
-libskills find "async http"        # Semantic search (future)
-libskills serve                    # HTTP/MCP server (future)
-```
+Part of the [LibSkills](https://github.com/LibSkills) ecosystem — the Behavioral Knowledge Layer for open-source libraries.
+
+## Status
+
+🚧 **Phase 2 on the roadmap.** CLI is scaffolded. Actively being implemented.
+
+## Commands
+
+| Command | Description | Status |
+|---------|-------------|--------|
+| `search <keyword>` | Fuzzy search registry index | 🚧 |
+| `get <path>[@version]` | Download skill to local cache | 🚧 |
+| `info <path>` | Show skill metadata | 🚧 |
+| `update` | Refresh registry index from upstream | 🚧 |
+| `list` | List locally cached skills | 🚧 |
+| `cache` | Manage local cache (prune, clear) | 🚧 |
+| `init` | Generate a skill template for contributors | 📅 Phase 6 |
+| `doctor <path>` | Validate a local skill against the schema | 📅 Phase 6 |
+| `find <intent>` | Semantic search | 📅 Phase 7 |
+| `serve` | MCP/HTTP server | 📅 Phase 10 |
 
 ## Quickstart
 
@@ -24,30 +32,13 @@ libskills search cpp logging
 libskills get cpp/gabime/spdlog
 ```
 
-## Commands
-
-| Command | Description | Status |
-|---------|-------------|--------|
-| `search <keyword>` | Fuzzy search registry index | 🚧 |
-| `get <path>[@version]` | Download skill to local cache | 🚧 |
-| `info <path>` | Show skill metadata | 🚧 |
-| `update` | Refresh registry index | 🚧 |
-| `list` | List cached skills | 🚧 |
-| `cache` | Manage local cache | 🚧 |
-| `init` | Generate skill template | 📅 |
-| `doctor <path>` | Validate and audit skill | 📅 |
-| `find <intent>` | Semantic search | 📅 |
-| `serve` | MCP/HTTP server on :8701 | 📅 |
-
 ## Local Cache
 
 ```
 ~/.libskills/
-├── cache/
-├── skills/
-├── index.db
-├── config.toml
-└── logs/
+├── cache/       # Downloaded skill files
+├── index.json   # Local registry index
+└── config.toml  # CLI configuration
 ```
 
 ## License
