@@ -1,0 +1,9 @@
+[package]
+name = "libskills"
+version = "0.1.0"
+edition = "2021"
+description = "CLI for the LibSkills ecosystem"
+license = "Apache-2.0"
+repository = "https://github.com/LibSkills/libskills-cli"
+
+[dependencies]
