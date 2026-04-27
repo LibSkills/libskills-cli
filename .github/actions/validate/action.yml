@@ -1,0 +1,159 @@
+name: 'LibSkills Validate'
+description: 'Validate and lint .libskills/ skill files in your repository'
+author: 'LibSkills'
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
+
+inputs:
+  path:
+    description: 'Path to the .libskills/ directory'
+    required: false
+    default: '.libskills'
+  fail_on_warnings:
+    description: 'Whether to fail the action on lint warnings'
+    required: false
+    default: 'false'
+
+outputs:
+  valid:
+    description: 'Whether the skill passed validation'
+    value: ${{ steps.validate.outputs.valid }}
+  lint_errors:
+    description: 'Number of lint errors'
+    value: ${{ steps.lint.outputs.errors }}
+  lint_warnings:
+    description: 'Number of lint warnings'
+    value: ${{ steps.lint.outputs.warnings }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check for .libskills/ directory
+      id: check
+      shell: bash
+      run: |
+        if [ ! -f "${{ inputs.path }}/skill.json" ]; then
+          echo "No .libskills/skill.json found at ${{ inputs.path }} — skipping validation."
+          echo "exists=false" >> $GITHUB_OUTPUT
+        else
+          echo "exists=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Setup Rust
+      if: steps.check.outputs.exists == 'true'
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+
+    - name: Build libskills CLI
+      if: steps.check.outputs.exists == 'true'
+      shell: bash
+      run: |
+        cd ${{ github.action_path }}/../..
+        cargo build --release --quiet 2>&1
+        echo "BIN=$PWD/target/release/libskills" >> $GITHUB_ENV
+
+    - name: Validate skill
+      id: validate
+      if: steps.check.outputs.exists == 'true'
+      shell: bash
+      run: |
+        set +e
+        OUTPUT=$($BIN validate ${{ inputs.path }} 2>&1)
+        EXIT_CODE=$?
+        set -e
+
+        echo 'VALIDATE_RESULT<<EOF' >> $GITHUB_OUTPUT
+        echo "$OUTPUT" >> $GITHUB_OUTPUT
+        echo 'EOF' >> $GITHUB_OUTPUT
+
+        if [ $EXIT_CODE -eq 0 ]; then
+          echo "valid=true" >> $GITHUB_OUTPUT
+        else
+          echo "valid=false" >> $GITHUB_OUTPUT
+          echo "$OUTPUT"
+          exit 1
+        fi
+
+    - name: Lint skill
+      id: lint
+      if: steps.check.outputs.exists == 'true'
+      shell: bash
+      run: |
+        set +e
+        OUTPUT=$($BIN lint ${{ inputs.path }} 2>&1)
+        EXIT_CODE=$?
+        set -e
+
+        echo 'LINT_RESULT<<EOF' >> $GITHUB_OUTPUT
+        echo "$OUTPUT" >> $GITHUB_OUTPUT
+        echo 'EOF' >> $GITHUB_OUTPUT
+
+        ERRORS=$(echo "$OUTPUT" | grep -cE '^\s*ERROR' || true)
+        WARNINGS=$(echo "$OUTPUT" | grep -cE '^\s*WARN' || true)
+        echo "errors=$ERRORS" >> $GITHUB_OUTPUT
+        echo "warnings=$WARNINGS" >> $GITHUB_OUTPUT
+
+        if [ "${{ inputs.fail_on_warnings }}" = "true" ] && [ "$WARNINGS" -gt 0 ]; then
+          echo "$OUTPUT"
+          exit 1
+        fi
+
+        if [ $EXIT_CODE -ne 0 ]; then
+          echo "$OUTPUT"
+          exit 1
+        fi
+
+    - name: Post PR comment
+      if: github.event_name == 'pull_request' && steps.check.outputs.exists == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const validateOutput = `${{ steps.validate.outputs.VALIDATE_RESULT }}`;
+          const lintOutput = `${{ steps.lint.outputs.LINT_RESULT }}`;
+          const valid = `${{ steps.validate.outputs.valid }}`;
+
+          const icon = valid === 'true' ? '✅' : '❌';
+          const body = `## ${icon} LibSkills Validation
+
+          **Validate:**
+          \`\`\`
+          ${validateOutput}
+          \`\`\`
+
+          **Lint:**
+          \`\`\`
+          ${lintOutput}
+          \`\`\`
+
+          > Powered by [LibSkills](https://github.com/LibSkills) — Behavioral Knowledge Layer for Open-Source Libraries.`;
+
+          const { data: comments } = await github.rest.issues.listComments({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+          });
+
+          const botComment = comments.find(c =>
+            c.user.type === 'Bot' && c.body.includes('LibSkills Validation')
+          );
+
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              comment_id: botComment.id,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
+          } else {
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
+          }

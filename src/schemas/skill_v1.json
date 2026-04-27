@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://libskills.dev/schemas/v1/skill.json",
+  "title": "LibSkills Skill Metadata v1",
+  "type": "object",
+  "required": [
+    "name", "repo", "language", "tier", "group",
+    "version", "skill_version", "schema",
+    "skill_type", "repo_skill",
+    "trust_score", "updated_at", "tags",
+    "read_order", "files", "risk_level"
+  ],
+  "properties": {
+    "name": { "type": "string", "description": "Library name" },
+    "repo": { "type": "string", "description": "GitHub repo (author/name)" },
+    "language": {
+      "type": "string",
+      "enum": ["cpp", "rust", "python", "go", "js"],
+      "description": "Primary programming language"
+    },
+    "tier": {
+      "type": "string",
+      "enum": ["tier1", "tier2"],
+      "description": "Quality tier: tier1 (curated) or tier2 (community)"
+    },
+    "group": {
+      "type": "string",
+      "enum": ["main", "contrib"],
+      "description": "Group: main (de-facto standard) or contrib (niche/smaller)"
+    },
+    "version": { "type": "string", "description": "Library version this skill targets" },
+    "skill_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the skill content"
+    },
+    "schema": {
+      "type": "string",
+      "pattern": "^libskills/v\\d+$",
+      "description": "Schema version: libskills/v0"
+    },
+    "skill_type": {
+      "type": "string",
+      "enum": ["library", "framework", "sdk", "runtime", "tooling", "middleware", "database", "network", "ui", "compiler"],
+      "description": "Classification type for AI consumption strategy"
+    },
+    "repo_skill": {
+      "type": "boolean",
+      "description": "True if this skill lives in the library's own repository (.libskills/)"
+    },
+    "trust_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Trustworthiness score"
+    },
+    "verified": { "type": "boolean", "description": "Whether the skill has passed review" },
+    "official": { "type": "boolean", "description": "Whether this is an official maintainer-authored skill" },
+    "updated_at": { "type": "string", "format": "date-time", "description": "ISO 8601 timestamp" },
+    "completeness": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Auto-calculated from file presence"
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Risk level for AI consumption priority"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Tags for search and discovery"
+    },
+    "read_order": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "File paths in recommended reading order (P0 files only)"
+    },
+    "compatibility": {
+      "type": "object",
+      "properties": {
+        "c++": { "type": "array", "items": { "type": "string" } },
+        "rust": { "type": "array", "items": { "type": "string" } },
+        "python": { "type": "array", "items": { "type": "string" } },
+        "compilers": { "type": "array", "items": { "type": "string" } },
+        "platforms": { "type": "array", "items": { "type": "string" } }
+      },
+      "description": "Language versions, compilers, and platforms"
+    },
+    "dependencies": {
+      "type": "object",
+      "properties": {
+        "required": { "type": "array", "items": { "type": "string" } },
+        "optional": { "type": "array", "items": { "type": "string" } },
+        "skills": { "type": "array", "items": { "type": "string" } }
+      },
+      "description": "Library dependencies and their skill references"
+    },
+    "trust_score_sources": {
+      "type": "object",
+      "properties": {
+        "official_review": { "type": "integer", "minimum": 0, "maximum": 40 },
+        "stars": { "type": "integer", "minimum": 0, "maximum": 20 },
+        "community_votes": { "type": "integer", "minimum": 0, "maximum": 20 },
+        "update_freshness": { "type": "integer", "minimum": 0, "maximum": 15 },
+        "issue_health": { "type": "integer", "minimum": 0, "maximum": 5 }
+      },
+      "description": "Breakdown of trust score components"
+    },
+    "files": {
+      "type": "object",
+      "properties": {
+        "P0": { "type": "array", "items": { "type": "string" }, "description": "Mandatory files: overview, pitfalls, safety" },
+        "P1": { "type": "array", "items": { "type": "string" }, "description": "Conditional files: lifecycle, threading, best-practices" },
+        "P2": { "type": "array", "items": { "type": "string" }, "description": "On-demand files: performance" },
+        "P3": { "type": "array", "items": { "type": "string" }, "description": "Reference files: examples" }
+      },
+      "description": "Knowledge files grouped by reading priority"
+    },
+    "inherits": {
+      "type": ["string", "null"],
+      "description": "Parent skill key if this skill inherits knowledge (future)"
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Ecosystem-specific metadata (crates_io, pypi, npm, etc.)"
+    },
+    "community_rating": {
+      "type": "object",
+      "properties": {
+        "reliability": { "type": "number" },
+        "hallucination_safety": { "type": "number" },
+        "thoroughness": { "type": "number" }
+      },
+      "description": "Community rating scores (future)"
+    }
+  }
+}

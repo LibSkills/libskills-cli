@@ -1,0 +1,37 @@
+name: LibSkills CI
+
+on:
+  push:
+    paths:
+      - '.libskills/**'
+    branches: [main]
+  pull_request:
+    paths:
+      - '.libskills/**'
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate skill
+        uses: ./.github/actions/validate
+        with:
+          path: '.libskills'
+          fail_on_warnings: 'false'
+
+  test-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Run tests
+        run: cargo test --release
