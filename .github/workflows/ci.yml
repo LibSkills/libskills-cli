@@ -2,12 +2,8 @@ name: LibSkills CI
 
 on:
   push:
-    paths:
-      - '.libskills/**'
     branches: [main]
   pull_request:
-    paths:
-      - '.libskills/**'
     branches: [main]
   workflow_dispatch:
 
